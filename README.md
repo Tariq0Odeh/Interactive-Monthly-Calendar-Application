@@ -29,6 +29,6 @@ The other slots are free.
 ---
 ## Languages And Tools:
 
-- <img align="left" alt="Missouri State University" width="50px" src="https://d92mrp7hetgfk.cloudfront.net/images/sites/misc/missouri_state_u-1/standard.png?1548463771" /> <img align="left" alt="GitHub" width="50px" src="https://raw.githubusercontent.com/github/explore/78df643247d429f6cc873026c0622819ad797942/topics/github/github.png" /> 
+- <img align="left" alt="Missouri State University" width="50px" src="https://d92mrp7hetgfk.cloudfront.net/images/sites/misc/missouri_state_u-1/standard.png?1548463771" /> <img align="left" alt="GitHub" width="50px" src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" /> 
 
 <br/>
