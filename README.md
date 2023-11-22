@@ -7,8 +7,8 @@ Create a MIPS assembly code for a user-friendly monthly calendar management syst
  ## How to run
 
  - Clone the repository to your local machine.
- - Make sure you have MARS MIPS simulator installed  
- - Then in run the mips code: 
+ - Make sure you have MARS MIPS simulator installed.
+ - Then in run the mips code.
  
  ---
 ## Calendar.txt File Format
