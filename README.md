@@ -7,27 +7,28 @@ Create a MIPS assembly code for a user-friendly monthly calendar management syst
  ## How to run
 
  - Clone the repository to your local machine.
- - Make sure you have OpenGL installed  
- - Then in terminal write: 
- ```
-  make all
-  make run
- ```
-   
+ - Make sure you have MARS MIPS simulator installed  
+ - Then in run the mips code: 
+ 
  ---
-## Arguments File input
+## Calendar.txt File Format
 You can customize the following parameters in the source code:
 
-- NUM_OF_ANTS 
-- SPEED_RANGE 
-- FOOD_TIMER 
-- FOOD_SMELL_DISTANCE 
-- PHEROMONE_SMELL_DISTANCE_THRESHOLD 
-- FOOD_PORTION 
-- SIMULATION_TIMER 
+1. Each line represents a day
+2. The line starts with an index indication the day in the month
+3. The working day start from 8AM to 5PM.
+4. There are three types of an appointments: Lectures (L), Office Hours (OH), Meetings (M)
+5. To reserve a slot, provide the start and the end time with the type of appointments separated by 
+a comma. For example, the following line have the following appointments:
+
+11: 8-9 L, 10-12 OH, 12-2 M
+
+From 8 to 9 there is a lecture, from 10 to 12 reserved for an office hour, and from 12-2 for meeting. 
+The other slots are free.
+
 ---
 ## Languages And Tools:
 
-- <img align="left" alt="Visual Studio Code" width="40px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/visual-studio-code/visual-studio-code.png" /> <img align="left" alt=  "OpenGl" width="60px" src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Opengl-logo.svg" /><img align="left" alt="C" width="50px" src="https://user-images.githubusercontent.com/25181517/192106070-46255bcf-65e6-4c6b-a296-bf8d0d8fb2a7.png" /><img align="left" alt="GitHub" width="50px" src="https://raw.githubusercontent.com/github/explore/78df643247d429f6cc873026c0622819ad797942/topics/github/github.png" /> <img align="left" alt="Linux" width="50px" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/800px-Tux.svg.png" /> 
+- <img align="left" alt="Missouri State University" width="50px" src="https://d92mrp7hetgfk.cloudfront.net/images/sites/misc/missouri_state_u-1/standard.png?1548463771" /> <img align="left" alt="GitHub" width="50px" src="https://raw.githubusercontent.com/github/explore/78df643247d429f6cc873026c0622819ad797942/topics/github/github.png" /> 
 
 <br/>
