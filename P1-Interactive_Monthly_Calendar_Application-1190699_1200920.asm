@@ -127,11 +127,14 @@ view_calendar:
 	li $v0, 4             		# Print string - syscall 4
         la $a0, newline     		# Load the newline character
         syscall             		# System call
-	li $t1, 1			# Flag to skip reader in give_day function			
+	
+	li $t1, 1			# Flag to skip reader in give_day function						
 	jal give_day			# Call give_day function to read the number of the day and save the day in buffer
+	
 	li $v0, 4         		# System call for print_str
     	la $a0, day_buffer   		# Load the address of the string into $a0
    	syscall          		# System call
+   	
    	li $t9, 0          		# Reset the temporary register for the next integer
     	j continue_extract
 	
