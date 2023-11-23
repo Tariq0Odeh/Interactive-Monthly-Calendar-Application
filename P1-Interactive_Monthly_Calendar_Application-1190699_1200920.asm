@@ -9,7 +9,7 @@
 
 ################# Data segment #####################
 .data
-    file_path:    		.asciiz "C:\\Users\\tariq\\OneDrive\\Desktop\\P1-Arch\\calendar-input.txt" 	# The path of input file 
+    file_path:    		.asciiz "C:\\Users\\tariq\\OneDrive\\Desktop\\P1-Arch\\calendar.txt" 	# The path of input file 
     #file_path:    		.asciiz "C:\\Users\\wasim\\Desktop\\calendar-input.txt" 	# The path of input file 
     menu:  	  		.asciiz "*--------------------------------*\n*            {Main Menu}         *\n*--------------------------------*\n*  [1]--> View the calendar      *\n*  [2]--> View Statistics        *\n*  [3]--> Add a new appointment  *\n*  [4]--> Delete an appointment  *\n*  [0]--> Exit                   *\n*--------------------------------*\nEnter your choice: "
     view_menu:  	  	.asciiz "\n\n*-------------------------------------*\n*             {View Menu}             *\n*-------------------------------------*\n*   [1]--> Per day                    *\n*   [2]--> Per set of days            *\n*   [3]--> Given slot in a given day  *\n*   [0]--> Back                       *\n*-------------------------------------*\nEnter your choice: "
@@ -89,76 +89,16 @@ view_calendar:
 # ++++++++++++++++
 
     view_per_day:    	
-        li $v0, 4           		# Print string - syscall 4
-    	la $a0, view_per_day_str	# Load address of view_per_day_str into $a0
-    	syscall             		# System call
-
-    	li $v0, 5          		# Read integer - syscall 5
-    	syscall            		# System call
-    	move $t9, $v0       		# Save the user input
-    	
-    	p_indiv_day:
-    	la $t3, calendar_mem 		# Load address of calendar_mem into register $t3
-    	li $t5, 0           		# Initialize newline counter
-    	
-  	beq $t9, 1, skip_1		# Check if the input is first day
-    	subi $t7, $t9, 2    		# subtract 2 from user input to track the day want to print
-  	
-  	skip_1:				# In case the inpt is first day
-  	bne  $t9, 1, skip_2		# Check if the input is not hte first day
-	j print_first_line_loop		# Print fist day
-  			
-  	skip_2:      			# In case not hte first day
-    	blt $t9, 1, invalid_day 	# Validate the day input (1-31)
-    	bgt $t9, 31, invalid_day	# Validate the day input (1-31)
-    	
-    	calendar_loop:        		# Loop to count newlines
-        lb $t6, 0($t3)     		# Load a byte from the calendar
-        beq $t6, 10, inc_lines  	# Check if the current character is a newline
-        j continue_loop   		# Continue the loop
-
-    	inc_lines:
-        beq $t5, $t7, print_day 	# Check if reached the day want to print
-        addi $t5, $t5, 1  		# Increment the newline counter
-        j continue_loop   		# Continue the loop
-
-	continue_loop:
-        addi $t3, $t3, 1  		# Move to the next position in memory
-        j calendar_loop   		# Continue the loop
-
-        print_day:
-        addi $t3, $t3, 1  		# Move to the next position in memory
-        lb $t6, 0($t3)    		# Load a byte from the calendar
-        beq $t6, 10, reset 		# Check if the current character is a newline
-
-        li $v0, 11        		# Print character - syscall 11
-        move $a0, $t6	 		# Move the character to $a0
-    	syscall             		# System call
-        j print_day			# Continue the loop
-
-    	invalid_day:
-        li $v0, 4           		# Print string - syscall 4
-        la $a0, invalid_day_str 	# Print invalid day string
-        syscall            		# System call
-        	
-        j reset				# Back to the calendar view	
-        
-        print_first_line_loop:
-        lb $t6, 0($t3)           	# Load a byte from the calendar
-        beq $t6, 10, done_first_line  	# Check if the current character is a newline
-        li $v0, 11                	# Print character - syscall 11
-        move $a0, $t6             	# Move the character to $a0
-        syscall                   	# System call
-        addi $t3, $t3, 1          	# Move to the next position in memory
-        j print_first_line_loop   	# Continue the loop
-
-    	done_first_line:
-    	j reset				# Back to the calendar view
+    	jal give_day			# Call give_day function to read the number of the day and save the day in buffer    
+    	li $v0, 4         		# System call for print_str
+    	la $a0, day_buffer   		# Load the address of the string into $a0
+   	syscall          		# System call
+    	j view_calendar
  
 # ++++++++++++++++
 
     view_per_set_of_days:
-        li $v0, 4           		# Print string - syscall 4
+      	li $v0, 4           		# Print string - syscall 4
     	la $a0, view_per_set_days_str	# Load address of input_prompt into $a0
     	syscall             		# System call
     	
@@ -173,30 +113,34 @@ view_calendar:
     	extract_loop:
         lb $t2, input_string($t0)   	# Load the current character from the string
         beqz $t2, end_extract		# Check if the character is null (end of string)
-        li $t1, 48          		# ASCII code for '0'
+        li $t7, 48          		# ASCII code for '0'
         li $t4, 57          		# ASCII code for '9'
         li $t8, 44          		# ASCII code for ','
-        blt $t2, $t1, p_day		# Check if it in range
+        blt $t2, $t7, p_day		# Check if it in range
         bgt $t2, $t4, p_day		# Check if it in range
-        sub $t2, $t2, $t1   		# Convert ASCII to integer
+        sub $t2, $t2, $t7   		# Convert ASCII to integer
         mul $t9, $t9, 10    		# Multiply previous result by 10
         add $t9, $t9, $t2   		# Add the digit to the result
         j continue_extract		# Continue extracting
 
-        p_day:
-        li $v0, 4             		# Print string - syscall 4
+	p_day:
+	li $v0, 4             		# Print string - syscall 4
         la $a0, newline     		# Load the newline character
         syscall             		# System call
-        j p_indiv_day     		# Go to p_indiv_day in view_per_day to print the day
+	li $t1, 1			# Flag to skip reader in give_day function			
+	jal give_day			# Call give_day function to read the number of the day and save the day in buffer
+	li $v0, 4         		# System call for print_str
+    	la $a0, day_buffer   		# Load the address of the string into $a0
+   	syscall          		# System call
+   	li $t9, 0          		# Reset the temporary register for the next integer
+    	j continue_extract
 	
-	reset:
-        li $t9, 0          		# Reset the temporary register for the next integer
-
     	continue_extract:
         addi $t0, $t0, 1         	# Increment the counter
         j extract_loop        		# Continue the loop
 
-    	end_extract:		
+    	end_extract:
+    	li $t1, 0		
     	j view_calendar			# Back to the calendar view
         
 # ++++++++++++++++
@@ -214,6 +158,9 @@ view_calendar:
         li $v0, 11      		# Set the system call code for printing a character
 	li $a0, '|'     		# Load the '|' to print
 	syscall             		# System call
+	li $v0, 11       		# System call for print_char
+    	li $a0, 32       		# ASCII code for space
+   	syscall          		# Make system call
 	
     	search_loop:			# Search for the start of an appointment 
     	lb $t2, 0($s0)	 		# Load a character from the input buffer
@@ -317,6 +264,9 @@ view_calendar:
         j continue_ext       		# Continue the loop
        	
        	good_p:	
+       	 li $v0, 11       		# System call for print_char
+    	li $a0, 32       		# ASCII code for space
+    	syscall          		# Make system call
 	lb $t3, 1($s0)			# Load the types of an appointments
 	li $v0, 11      		# Set the system call code for printing a character
 	move $a0, $t3     		# Load the ASCII value of the character to print
@@ -332,9 +282,15 @@ view_calendar:
 	j delo
        	
        	delo:
+       	li $v0, 11       		# System call for print_char
+    	li $a0, 32       		# ASCII code for space
+   	syscall          		# Make system call
        	li $v0, 11      		# Set the system call code for printing a character
 	li $a0, '|'     		# Load the ASCII value of the character to print
 	syscall				# System call
+	li $v0, 11       		# System call for print_char
+    	li $a0, 32       		# ASCII code for space
+   	syscall          		# Make system call
        	j end_good_p			# Go to make the output good view
        	
 	to_0:
@@ -552,6 +508,16 @@ delete_appointment:
 #  -------------------------------------------------
 
 give_day:
+    li $t3, 0          			# Initialize loop counter
+    la $t5, day_buffer 			# Load the base address of day_buffer
+    clear_loop:
+    sb $zero, 0($t5)     		# Store zero in the current byte of day_buffer
+    addi $t3, $t3, 1   			# Increment loop counter
+    addi $t5, $t5, 1   			# Increment address
+    bne $t3, 100, clear_loop  		# Branch to clear_loop if not all bytes are cleared
+    
+    beq $t1, 1, skip_read		# Check if the call from set of days option
+    
     li $v0, 4           		# Print string - syscall 4
     la $a0, view_per_day_str		# Load address of view_per_day_str into $a0
     syscall             		# System call
@@ -559,9 +525,11 @@ give_day:
     li $v0, 5          			# Read integer - syscall 5
     syscall            			# System call
     move $t9, $v0       		# Save the user input
-    	
+    
+    skip_read:		
     la $t3, calendar_mem 		# Load address of calendar_mem into register $t3
     li $t5, 0           		# Initialize newline counter
+    li $t8, 0				# Reset the $t8 register
     	
     beq $t9, 1, skip1			# Check if the input is first day
     subi $t7, $t9, 2    		# subtract 2 from user input to track the day want to print
@@ -580,7 +548,7 @@ give_day:
     j con_loop   			# Continue the loop
 
     add_lines:
-    beq $t5, $t7, print_day 		# Check if reached the day want to print
+    beq $t5, $t7, take_day 		# Check if reached the day want to print
     addi $t5, $t5, 1  			# Increment the newline counter
     j con_loop   			# Continue the loop
 
@@ -598,15 +566,21 @@ give_day:
         
     take_first_line:
     lb $t6, 0($t3)           		# Load a byte from the calendar
-    sb $t6, day_buffer($t8) 		# Store the character in the buffer
     beq $t6, 10, done_take  		# Check if the current character is a newline
+    sb $t6, day_buffer($t8) 		# Store the character in the buffer
     addi $t3, $t3, 1  			# Move to the next position in memory
     addi $t8, $t8, 1           		# Increment the buffer index
     j take_first_line    		# Continue the loop
-        
+    
+    invalid_day:
+    li $v0, 4           		# Print string - syscall 4
+    la $a0, invalid_day_str 		# Print invalid day string
+    syscall  				# System call
+    j main
+                    
     done_take:
     jr $ra				# Return
-    				
+ 							    				    							
 #  -------------------------------------------------
 
 read_slot:
