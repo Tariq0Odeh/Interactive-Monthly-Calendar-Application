@@ -429,7 +429,7 @@ view_statistics:
 
     j main     				# Jump back to the menu
 #  -------------------------------------------------    
-    my_function:
+        my_function:
 	move $t2,$a0			#take copy of addrees of calender 
 	subi $t2, $t2, 3         	# Move to the previce position in memory
 	lb $t5 , 0($t2)			#load char from calender
@@ -472,6 +472,7 @@ view_statistics:
 	sub $t8, $t8, 48         # Convert ASCII to decimal
 
 	
+	
  	next_3:
 	li $t2 , 6  		#load 6 to $t2 to check if any number from 1 to 5 
 	blt $t8,$t2 Add1       # check if the first number 1-5 then add 12 
@@ -488,6 +489,10 @@ view_statistics:
 	addi $t9,$t9,12        # add 12 to the number
 	
 	else_2: 		# not the number is ready 
+	
+	move $a1,$t8
+	move $a2,$t9
+	
 	sub $v0,$t9,$t8		# find the long of L buy sub
 	jr $ra
 
