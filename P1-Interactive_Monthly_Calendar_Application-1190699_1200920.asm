@@ -8,17 +8,17 @@
 
 ################# Data segment #####################
 .data
-    file_path:    		.asciiz "C:\\Users\\tariq\\OneDrive\\Desktop\\P1-Arch\\calendar.txt" 	# The path of input file 
-    #file_path:    		.asciiz "C:\\Users\\wasim\\Desktop\\calendar-input.txt" 	# The path of input file 
+    #file_path:    		.asciiz "C:\\Users\\tariq\\OneDrive\\Desktop\\P1-Arch\\calendar.txt" 	# The path of input file 
+    file_path:    		.asciiz "C:\\Users\\wasim\\Desktop\\calendar.txt" 	# The path of input file 
     menu:  	  		.asciiz "*--------------------------------*\n*            {Main Menu}         *\n*--------------------------------*\n*  [1]--> View the calendar      *\n*  [2]--> View Statistics        *\n*  [3]--> Add a new appointment  *\n*  [4]--> Delete an appointment  *\n*  [0]--> Exit                   *\n*--------------------------------*\nEnter your choice: "
     view_menu:  	  	.asciiz "\n\n*-------------------------------------*\n*             {View Menu}             *\n*-------------------------------------*\n*   [1]--> Per day                    *\n*   [2]--> Per set of days            *\n*   [3]--> Given slot in a given day  *\n*   [0]--> Back                       *\n*-------------------------------------*\nEnter your choice: "
     view_per_day_str:  		.asciiz "\nEnter the day in range(1-31): "
     view_per_set_days_str: 	.asciiz "\nEnter a comma-separated list of integers (1,2,3,...): "
     invalid_day_str:   		.asciiz "\nInvalid day input. Please enter a day between 1 and 31.\n"
-    newline: 			.asciiz "\n"
     char_L:       		.asciiz "L"
     char_M:       		.asciiz "M"
     char_O:       		.asciiz "O"
+    char_H:       		.asciiz "H"
     space:       		.asciiz "   "
     number_of_L:		.asciiz "\nNumber of lectures (in hours): "
     number_of_OH:		.asciiz "\nnumber of OH (in hours): "
@@ -30,8 +30,11 @@
     wrong_input: 		.asciiz "\nInvalid time input. Please enter a time between 8AM and 5PM. "
     slot_type: 			.asciiz "\n*-------------------*\n*   Type of slot    *\n*-------------------*\n*    [1]--> L       *\n*    [2]--> M       *\n*    [3]--> OH      *\n*-------------------*\nEnter your choice:"
     invalid_delete: 		.asciiz "Invalid time input. Please make sure that the appointment exists\n"
-
+    type:			.asciiz "\nEnter th type of slot L,OH and M : "
+    wrong_slot:			.asciiz "\nThe slot is wrong\n"
+        
     print_buffer:  		.space 100         	# Buffer to store the day as a string
+    newline: 			.asciiz "\n"
     day_buffer:        		.space 100         	# Buffer to store the day as a string
     input_string: 		.space 91      		# Maximum length of the input string (we calculated it) 
     calendar_mem: 		.space 2790     	# Memory space to store the calendar (we calculated it 31 × 10 × 9)
@@ -432,6 +435,498 @@ view_statistics:
 #  -------------------------------------------------    
 
 add_appointment:
+
+    li $t3, 0          			# Initialize loop counter
+    la $t5, print_buffer 		# Load the address of print_buffer 
+    clear_2p:				# Clear the print_buffer 
+    sb $zero, 0($t5)     		# Store zero in the current byte of print_buffer 
+    addi $t3, $t3, 1   			# Increment loop counter
+    addi $t5, $t5, 1   			# Increment address
+    bne $t3, 100, clear_2p  		# Branch to clear_loop if not all bytes are cleared
+
+    li $a1, 1				# Flag to add \n in the end of print_buffer in give_day function
+    jal give_day			# Call give_day function to get the day that we want to work on it
+    
+   	 li $v0, 4          			
+   	 la $a0,newline   	    	# add new line  		
+   	 syscall
+    	la $t0, day_buffer  		# Pointer to the day buffer
+    	print_loop:			# Search for the start of an appointment 
+    	lb $t3, 0($t0)	 		# Load a character from the input buffer
+    	beq $t3, 10  ,next_555
+    	li $v0 ,11
+    	move $a0,$t3
+    	syscall    	   	    	   	   	    	   	   	   	   	    	
+        addi $t0, $t0, 1  		# Continue to the next character
+        j print_loop			# Continue the loop
+    	
+    	next_555:
+    
+    jal read_slot			# Call read_slot function to read the start/end of slot
+
+  	 move $a1,$t0
+  	 move $a2,$t6
+  	 
+  	 
+    	 li $v0, 4          			
+   	 la $a0,type      	# load the text 		
+   	 syscall
+   	
+   	li $v0, 12 
+    	syscall
+    	move $a3,$v0
+
+	li $t4 , 6  		#load 6 to $t2 to check if any number from 1 to 5 
+	
+	blt $a1,$t4 ,Add11       # check if the first number 1-5 then add 12 
+	
+	j else_11               # if not go to else 
+	Add11:
+	addi $a1,$a1,12 	# add 12 to the number
+	
+	else_11:
+	blt $a2,$t4 ,Add22      # check the scecond number
+	
+	j else_22		# if not go to else_2
+	Add22:
+	addi $a2,$a2,12        # add 12 to the number
+	
+	else_22: 		# not the number is ready 
+    	
+    	lb $t6, char_L
+        beq $t6, $a3, true		# check if the char = "L" 
+        lb $t6, char_M
+        beq $t6, $a3, true		# check if the char = "M" 
+        lb $t6, char_O
+        beq $t6, $a3, true		# check if the char = "OH" 
+        
+        # Convert small letter to capital letter
+	li $t3, 32          # Difference between small and capital letters in ASCII
+	sub $a3, $a3, $t3    # Convert small letter to capital letter
+        
+    	
+    	true:
+
+	
+	move $s0,$a1
+	move $s1,$a2
+	move $s2,$a3
+    	la $t0, day_buffer  		# Pointer to the day buffer
+
+
+
+
+ 	search_loop1:			# Search for the start of an appointment 
+    	lb $t3, 0($t0)	 		# Load a character from the input buffer
+    	beq $t3 ,10,next_55
+    	
+    	#li $v0 ,11
+    	#move $a0,$t3
+    	#syscall
+    	
+    	lb  $t4 ,char_L
+    	beq $t3 ,$t4 ,get_slot
+    	lb  $t4 ,char_M
+    	beq $t3 ,$t4 ,get_slot
+    	lb  $t4 ,char_O
+    	beq $t3 ,$t4 ,get_slot
+    	
+    	j skip_11
+    	
+    	 get_slot:
+    	 move $a0,$t0 
+    	 jal my_function
+    	 j test_slot
+    	 
+   	END_test:   	   	    	   	   	    	
+    	skip_11:    	   	    	   	   	    	   	   	   	   	    	
+        addi $t0, $t0, 1  		# Continue to the next character
+        j search_loop1			# Continue the loop
+
+   	test_slot:
+    	#s0 ,s1 ,a1,a2
+    	
+    	#if (s0 >= a1 && s0 < a2) || (s1 > a1 && s1 <= a2)
+    	bge $s0 ,$a1 ,and_1
+    	j or_1
+    	and_1:
+    	blt $s0 ,$a2 ,invaild_1
+    	or_1:
+    	bgt $s1,$a1, t2
+    	j or_2
+    	t2:
+    	ble $s1 ,$a2 ,invaild_1
+    	or_2:
+    	j END_test
+    	# big note 
+    	j next_55
+    	invaild_1:
+    	 li $v0, 4          			
+   	 la $a0,wrong_slot  	    	# add new line  		
+   	 syscall
+   	 j main
+    	
+    	
+    	
+    	next_55:
+
+#li $v0 ,4
+#la  $a0 ,newline
+#syscall
+#li $v0 ,1
+#move $a0 ,$s0
+#syscall
+#li $v0 ,4
+#la  $a0 ,newline
+#syscall
+#li $v0 ,1
+#move $a0 ,$s1
+#syscall
+#li $v0 ,4
+#la  $a0 ,newline
+#syscall
+#li $v0 ,11
+#move $a0 ,$s2
+#syscall
+#li $v0 ,4
+#la  $a0 ,newline
+#syscall
+
+
+
+
+
+
+   	la $t0, day_buffer  		# Pointer to the day buffer
+	li $t1,0
+   	li $t2,0
+   	li $t5,0
+	li $s7,1
+
+
+   	lb $t3, 0($t0)	 		# Load a character from the input buffer
+    	sb $t3 , print_buffer($t1)
+	addi $t1 ,$t1, 1	    	   	   	    	   	   	   	   	    	
+        addi $t0, $t0, 1  		# Continue to the next character
+     	
+    
+	
+    	lb $t3, 0($t0)	 		# Load a character from the input buffer
+    	sb $t3 , print_buffer($t1)
+	addi $t1 ,$t1, 1	    	   	   	    	   	   	   	   	    	
+        addi $t0, $t0, 1  		# Continue to the next character
+        
+    	  
+    	  
+
+  	add_loop:			# Search for the start of an appointment 
+    	lb $t3, 0($t0)	 		# Load a character from the input buffer
+    	
+    	#li $v0,11
+    	#move $a0,$t3
+    	#syscall
+    	
+    	beq $t2 ,1, dont_test
+    	beq $t5 ,1 ,reset_t5
+    	j test_place
+    	dont_test:
+    	next_loop:
+
+    	beq $t3,10 ,next_5555
+    	
+
+    	sb $t3 , print_buffer($t1)
+	addi $t1 ,$t1, 1	    	   	   	    	   	   	   	   	    	
+        addi $t0, $t0, 1  		# Continue to the next charactercharacter
+        j add_loop			# Continue the loop
+        
+        reset_t5:
+        li $t5 ,0
+        j next_loop
+
+	reset_t3 :
+	move $t3 ,$t6
+	j next_loop
+
+
+
+
+ 	test_place:
+ 	move $t6 ,$t3
+ 	
+ 	
+ 	# Check if $t3 contains a numeric character (ASCII '0' to '9')
+	li $t7, '0'  # ASCII code for '0'
+	li $t8, '9'  # ASCII code for '9'
+
+	# Check if $t3 is within the ASCII range of numeric characters
+	blt $t3, $t7, reset_t3 # Branch if $t3 is less than '0'
+	bgt $t3, $t8, reset_t3 # Branch if $t3 is greater than '9'
+
+	# If the execution reaches here, $t3 contains a numeric character
+	# Handle the case where $t3 is a numeric character
+	# $t3 contains an integer
+	 subi $t3,$t3 ,48
+	 move $t9 ,$t3 
+        addi $t0, $t0, 1  		# Continue to the next character
+        lb $t3, 0($t0)	 
+        subi $t0, $t0, 1  		# Continue to the next character		
+        
+        blt $t3, $t7, test55
+	bgt $t3, $t8, test55
+	li $t5 , 1
+	mul $t9,$t9,10
+	subi $t3,$t3 ,48
+	add $t9,$t9,$t3
+	
+
+	
+	
+	
+	test55:
+	move $t3,$t9
+
+	
+	li $t4 , 6  		#load 6 to $t2 to check if any number from 1 to 5 
+	
+	blt $t3,$t4 ,Add111       # check if the first number 1-5 then add 12 
+	j else_111               # if not go to else 
+	Add111:
+	addi $t3,$t3,12 	# add 12 to the number
+	
+	else_111:
+
+	
+	
+	bgt $t3,$s0, write_temp
+    	j reset_t3 
+    	write_temp:
+    	li $t2,1
+    	li $s7,0
+    	
+	bgt $s0,12, sub_1_12
+	j  check_s1
+	sub_1_12:
+	subi $s0,$s0,12
+	check_s1:
+	bgt $s1,12, sub_2_12
+	j end_check
+	sub_2_12:
+	subi $s1,$s1,12
+	end_check:
+
+	
+	
+	
+    	bgt $s0 , 9 , put_2_D 
+    	addi $s0, $s0, '0'    # Convert the integer to ASCII representation
+    	sb $s0 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	j dont_put_2_D 
+	put_2_D  :
+	
+	li $s4,10
+	
+	div $s0,$s4
+	
+	mflo $s0
+	addi $s0, $s0, '0'    # Convert the integer to ASCII representation
+    	sb $s0 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	mfhi $s0
+	addi $s0, $s0, '0'    # Convert the integer to ASCII representation
+    	sb $s0 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	dont_put_2_D :
+    		
+	li $t8 , 45
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	bgt $s1 , 9 , put_2_D1
+    	addi $s1, $s1, '0'    # Convert the integer to ASCII representation
+    	sb $s1 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	j dont_put_2_D1 
+	put_2_D1  :
+	
+	li $s4,10
+	
+	div $s1,$s4
+	
+	mflo $s1
+	addi $s1, $s1, '0'    # Convert the integer to ASCII representation
+    	sb $s1 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	mfhi $s1
+	addi $s1, $s1, '0'    # Convert the integer to ASCII representation
+    	sb $s1 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	dont_put_2_D1 :
+    		
+	
+	li $t8 , 32
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	
+	
+	sb $s2 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	lb  $t8 ,char_O
+    	beq $s2 ,$t8 ,Add_H
+	j not_add_H
+	Add_H:
+	lb  $t8 ,char_H
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	
+	not_add_H:
+ 	li $t8 , 44
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	li $t8 , 32
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	
+	 move $t3 ,$t6
+	j next_loop
+
+
+	next_5555:
+	beq $s7,1 add_slot
+	j slot_added
+	add_slot:
+	
+	li $t8 , 44
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	li $t8 , 32
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	bgt $s0,12, sub_1_120
+	j  check_s10
+	sub_1_120:
+	subi $s0,$s0,12
+	check_s10:
+	bgt $s1,12, sub_2_120
+	j end_check0
+	sub_2_120:
+	subi $s1,$s1,12
+	end_check0:
+
+	
+	
+	
+    	bgt $s0 , 9 , put_2_D0 
+    	addi $s0, $s0, '0'    # Convert the integer to ASCII representation
+    	sb $s0 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	j dont_put_2_D0 
+	put_2_D0  :
+	
+	li $s4,10
+	
+	div $s0,$s4
+	
+	mflo $s0
+	addi $s0, $s0, '0'    # Convert the integer to ASCII representation
+    	sb $s0 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	mfhi $s0
+	addi $s0, $s0, '0'    # Convert the integer to ASCII representation
+    	sb $s0 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	dont_put_2_D0 :
+    		
+	li $t8 , 45
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	bgt $s1 , 9 , put_2_D10
+    	addi $s1, $s1, '0'    # Convert the integer to ASCII representation
+    	sb $s1 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	j dont_put_2_D10 
+	put_2_D10  :
+	
+	li $s4,10
+	
+	div $s1,$s4
+	
+	mflo $s1
+	addi $s1, $s1, '0'    # Convert the integer to ASCII representation
+    	sb $s1 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	mfhi $s1
+	addi $s1, $s1, '0'    # Convert the integer to ASCII representation
+    	sb $s1 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	dont_put_2_D10 :
+    		
+	
+	li $t8 , 32
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	
+	
+	sb $s2 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	lb  $t8 ,char_O
+    	beq $s2 ,$t8 ,Add_H0
+	j not_add_H0
+	Add_H0:
+	lb  $t8 ,char_H
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	
+	not_add_H0:
+ 	
+	
+	li $t8 , 32
+	sb $t8 , print_buffer($t1)
+	addi $t1 ,$t1 ,1
+	
+	
+	
+	slot_added:
+ 	li $t0, 0x0A			# Add new line in the last
+   	sb $t0, 0($t1)           		# Store byte to print_buffer
+
+	next_54:
+	li,$v0,4
+	la $a0,newline
+	syscall
+
+
+
+    la $a0, print_buffer 		# Load the print_buffer address to print
+    li $v0, 4     			# System call number for printing a string
+    syscall				# System call
+    
+    jal write_file			# Call write_file function to write on calendar.txt file
+
+
+
 
       j main
 
