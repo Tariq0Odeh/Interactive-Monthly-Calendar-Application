@@ -8,8 +8,8 @@
 
 ################# Data segment #####################
 .data
-    #file_path:    		.asciiz "C:\\Users\\tariq\\OneDrive\\Desktop\\P1-Arch\\calendar.txt" 	# The path of input file 
-    file_path:    		.asciiz "C:\\Users\\wasim\\Desktop\\calendar.txt" 	# The path of input file 
+    file_path:    		.asciiz "C:\\Users\\tariq\\OneDrive\\Desktop\\P1-Arch\\calendar.txt" 	# The path of input file 
+    #file_path:    		.asciiz "C:\\Users\\wasim\\Desktop\\calendar.txt" 	# The path of input file 
     menu:  	  		.asciiz "*--------------------------------*\n*            {Main Menu}         *\n*--------------------------------*\n*  [1]--> View the calendar      *\n*  [2]--> View Statistics        *\n*  [3]--> Add a new appointment  *\n*  [4]--> Delete an appointment  *\n*  [0]--> Exit                   *\n*--------------------------------*\nEnter your choice: "
     view_menu:  	  	.asciiz "\n\n*-------------------------------------*\n*             {View Menu}             *\n*-------------------------------------*\n*   [1]--> Per day                    *\n*   [2]--> Per set of days            *\n*   [3]--> Given slot in a given day  *\n*   [0]--> Back                       *\n*-------------------------------------*\nEnter your choice: "
     view_per_day_str:  		.asciiz "\nEnter the day in range(1-31): "
@@ -602,7 +602,7 @@ add_appointment:
    	li $t2,0
    	li $t5,0
 	li $s7,1
-
+	li $s6, 0
 
    	lb $t3, 0($t0)	 		# Load a character from the input buffer
     	sb $t3 , print_buffer($t1)
@@ -621,7 +621,7 @@ add_appointment:
 
   	add_loop:			# Search for the start of an appointment 
     	lb $t3, 0($t0)	 		# Load a character from the input buffer
-    	
+    	addi $s6, $s6, 1
     	#li $v0,11
     	#move $a0,$t3
     	#syscall
@@ -631,7 +631,6 @@ add_appointment:
     	j test_place
     	dont_test:
     	next_loop:
-
     	beq $t3,10 ,next_5555
     	
 
@@ -647,8 +646,7 @@ add_appointment:
 	reset_t3 :
 	move $t3 ,$t6
 	j next_loop
-
-
+	
 
 
  	test_place:
@@ -806,11 +804,12 @@ add_appointment:
 	beq $s7,1 add_slot
 	j slot_added
 	add_slot:
-	
+	addi $t1 ,$t1 ,-1
+	blt $s6, 4, skip_now
 	li $t8 , 44
 	sb $t8 , print_buffer($t1)
 	addi $t1 ,$t1 ,1
-	
+	skip_now:
 	li $t8 , 32
 	sb $t8 , print_buffer($t1)
 	addi $t1 ,$t1 ,1
@@ -910,7 +909,7 @@ add_appointment:
 	
 	slot_added:
  	li $t0, 0x0A			# Add new line in the last
-   	sb $t0, 0($t1)           		# Store byte to print_buffer
+   	sb $t0, print_buffer($t1)           		# Store byte to print_buffer
 
 	next_54:
 	li,$v0,4
