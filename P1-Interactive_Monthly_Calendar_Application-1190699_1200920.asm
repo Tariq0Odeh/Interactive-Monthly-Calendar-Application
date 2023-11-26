@@ -342,19 +342,19 @@ view_statistics:
 
 	  L_inc:
         move $a0,$t3			#take copy of addrees of calender  to function
-	jal my_function			#call the function to find sum of hours
+	jal get_slot			#call the function to find sum of hours
 	add $s0 , $s0 , $v0 		# add the hours for the counter 
 	j continue 			# back to the loop 
 	
 	   OH_inc:
 	move $a0,$t3			#take copy of addrees of calender  to function
-	jal my_function			#call the function to find sum of hours
+	jal get_slot			#call the function to find sum of hours
 	add $s1 , $s1, $v0 		# add the hours for the counter 
 	j continue			# back to the loop 
 	
           M_inc:
 	 move $a0,$t3			#take copy of addrees of calender  to function
-	jal my_function			#call the function to find sum of hours
+	jal get_slot			#call the function to find sum of hours
 	add $s2 , $s2, $v0 		# add the hours for the counter 
 	j continue			# back to the loop 
 
@@ -535,7 +535,7 @@ add_appointment:
     	
     	 get_slot:
     	 move $a0,$t0 
-    	 jal my_function
+    	 jal get_slot
     	 j test_slot
     	 
    	END_test:   	   	    	   	   	    	
@@ -977,7 +977,7 @@ delete_appointment:
     j search_type			# Continue search
 
     found:     				# The target character was found, store the index in $a0 
-    jal my_function			# Call my_function to get the range of appointment
+    jal get_slot			# Call get_slot to get the range of appointment
     j check_process			# Go to check if the slot is avaliable for this appointment
     
     check_process:
@@ -1383,7 +1383,7 @@ read_slot:
     syscall                 		# System call
     
 #  -------------------------------------------------
-my_function:
+get_slot:
 	move $t2,$a0			# take copy of addrees of calender 
 	subi $t2, $t2, 3         	# Move to the previce position in memory
 	lb $t5 , 0($t2)			# load char from calender
