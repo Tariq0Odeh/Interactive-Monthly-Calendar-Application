@@ -8,8 +8,8 @@
 
 ################# Data segment #####################
 .data
-    file_path:    		.asciiz "C:\\Users\\tariq\\OneDrive\\Desktop\\P1-Arch\\calendar.txt" 	# The path of input file 
-    #file_path:    		.asciiz "C:\\Users\\wasim\\Desktop\\calendar.txt" 	# The path of input file 
+    #file_path:    		.asciiz "C:\\Users\\tariq\\OneDrive\\Desktop\\P1-Arch\\calendar.txt" 	# The path of input file 
+    file_path:    		.asciiz "C:\\Users\\wasim\\Desktop\\calendar.txt" 	# The path of input file 
     menu:  	  		.asciiz "*--------------------------------*\n*            {Main Menu}         *\n*--------------------------------*\n*  [1]--> View the calendar      *\n*  [2]--> View Statistics        *\n*  [3]--> Add a new appointment  *\n*  [4]--> Delete an appointment  *\n*  [0]--> Exit                   *\n*--------------------------------*\nEnter your choice: "
     view_menu:  	  	.asciiz "\n\n*-------------------------------------*\n*             {View Menu}             *\n*-------------------------------------*\n*   [1]--> Per day                    *\n*   [2]--> Per set of days            *\n*   [3]--> Given slot in a given day  *\n*   [0]--> Back                       *\n*-------------------------------------*\nEnter your choice: "
     view_per_day_str:  		.asciiz "\nEnter the day in range(1-31): "
@@ -525,15 +525,15 @@ add_appointment:
     	#syscall
     	
     	lb  $t4 ,char_L
-    	beq $t3 ,$t4 ,get_slot
+    	beq $t3 ,$t4 ,get_slot1
     	lb  $t4 ,char_M
-    	beq $t3 ,$t4 ,get_slot
+    	beq $t3 ,$t4 ,get_slot1
     	lb  $t4 ,char_O
-    	beq $t3 ,$t4 ,get_slot
+    	beq $t3 ,$t4 ,get_slot1
     	
     	j skip_11
     	
-    	 get_slot:
+    	 get_slot1:
     	 move $a0,$t0 
     	 jal get_slot
     	 j test_slot
