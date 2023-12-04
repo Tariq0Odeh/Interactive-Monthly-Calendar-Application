@@ -8,8 +8,8 @@
 
 ################# Data segment #####################
 .data
-    #file_path:    		.asciiz "C:\\Users\\tariq\\OneDrive\\Desktop\\P1-Arch\\calendar.txt" 	# The path of input file 
-    file_path:    		.asciiz "C:\\Users\\wasim\\Desktop\\calendar.txt" 	# The path of input file 
+    file_path:    		.asciiz "C:\\Users\\tariq\\OneDrive\\Desktop\\P1-Arch\\calendar.txt" 	# The path of input file 
+    #file_path:    		.asciiz "C:\\Users\\wasim\\Desktop\\calendar.txt" 	# The path of input file 
     menu:  	  		.asciiz "*--------------------------------*\n*            {Main Menu}         *\n*--------------------------------*\n*  [1]--> View the calendar      *\n*  [2]--> View Statistics        *\n*  [3]--> Add a new appointment  *\n*  [4]--> Delete an appointment  *\n*  [0]--> Exit                   *\n*--------------------------------*\nEnter your choice: "
     view_menu:  	  	.asciiz "\n\n*-------------------------------------*\n*             {View Menu}             *\n*-------------------------------------*\n*   [1]--> Per day                    *\n*   [2]--> Per set of days            *\n*   [3]--> Given slot in a given day  *\n*   [0]--> Back                       *\n*-------------------------------------*\nEnter your choice: "
     view_per_day_str:  		.asciiz "\nEnter the day in range(1-31): "
@@ -313,561 +313,483 @@ view_calendar:
 # ++++++++++++++++
 
     back: 				# Go bake to the main manu
-    j main				# Jump to the amin
+    	j main				# Jump to the amin
 
 #  -------------------------------------------------
 
 view_statistics:
-
-	la $t3, calendar_mem 		# Load address of calendar_mem into register $t2
-	li $s0, 0                      	# Counter for L in H
-	li $s1, 0			# Counter for OH in H
-	li $s2, 0			# Counter for M in H
+    la $t3, calendar_mem 		# Load address of calendar_mem into register $t2
+    li $s0, 0                      	# Counter for L in H
+    li $s1, 0				# Counter for OH in H
+    li $s2, 0				# Counter for M in H
 	
-	  Statistics_loop:
-        lb $t6, 0($t3)           	# Load a byte from the calendar
-        lb $t0, char_L  		
-        beq $t6, $t0,L_inc		# check if the char = "L" 
-        lb $t0, char_O
-        beq $t6, $t0,OH_inc		# check if the char = "O" 
-        lb $t0, char_M
-        beq $t6, $t0,M_inc		# check if the char = "M" 
-        lb $t0, END
-        beq $t6, $t0,END_COUNT		#check if calender is end
-        continue:
-        addi $t3, $t3, 1          	# Move to the next position in memory
-        j Statistics_loop   		# Continue the loop
+    Statistics_loop:
+    lb $t6, 0($t3)           		# Load a byte from the calendar
+    lb $t0, char_L  		
+    beq $t6, $t0,L_inc			# check if the char = "L" 
+    lb $t0, char_O
+    beq $t6, $t0,OH_inc			# check if the char = "O" 
+    lb $t0, char_M
+    beq $t6, $t0,M_inc			# check if the char = "M" 
+    lb $t0, END
+    beq $t6, $t0,END_COUNT		# check if calender is end
+    continue:
+    addi $t3, $t3, 1          		# Move to the next position in memory
+    j Statistics_loop   		# Continue the loop
 
-
-
-	  L_inc:
-        move $a0,$t3			#take copy of addrees of calender  to function
-	jal get_slot			#call the function to find sum of hours
-	add $s0 , $s0 , $v0 		# add the hours for the counter 
-	j continue 			# back to the loop 
+    L_inc:
+    move $a0,$t3			# take copy of addrees of calender  to function
+    jal get_slot			# call the function to find sum of hours
+    add $s0 , $s0 , $v0 		# add the hours for the counter 
+    j continue 				# back to the loop 
 	
-	   OH_inc:
-	move $a0,$t3			#take copy of addrees of calender  to function
-	jal get_slot			#call the function to find sum of hours
-	add $s1 , $s1, $v0 		# add the hours for the counter 
-	j continue			# back to the loop 
+    OH_inc:
+    move $a0,$t3			# take copy of addrees of calender  to function
+    jal get_slot			# call the function to find sum of hours
+    add $s1 , $s1, $v0 			# add the hours for the counter 
+    j continue				# back to the loop 
 	
-          M_inc:
-	 move $a0,$t3			#take copy of addrees of calender  to function
-	jal get_slot			#call the function to find sum of hours
-	add $s2 , $s2, $v0 		# add the hours for the counter 
-	j continue			# back to the loop 
+    M_inc:
+    move $a0,$t3			# take copy of addrees of calender  to function
+    jal get_slot			# call the function to find sum of hours
+    add $s2 , $s2, $v0 			# add the hours for the counter 
+    j continue				# back to the loop 
 
-
-           END_COUNT:
-	
-	 li $v0, 4          			
-   	 la $a0, number_of_L        	# load the text 		
-   	 syscall				
-   	 li $v0,1  		    	# print int
-	 move $a0, $s0 	            	# load number of H  
-	 syscall	
-	 li $v0, 4          			
-   	 la $a0,newline   	    	# add new line  		
-   	 syscall
+    END_COUNT:
+    li $v0, 4          			
+    la $a0, number_of_L        		# load the text 		
+    syscall					
+    li $v0,1  		    		# print int
+    move $a0, $s0 	            	# load number of H  
+    syscall	
+    li $v0, 4          			
+    la $a0,newline   	    		# add new line  		
+    syscall
    	
-	 li $v0, 4          			
-   	 la $a0, number_of_OH        	# load the text 		
-   	 syscall				
-   	 li $v0,1  		    	# print int
-	 move $a0, $s1 	            	# load number of H  
-	 syscall	
-	 li $v0, 4          			
-   	 la $a0,newline   	    	# add new line  		
-   	 syscall
+    li $v0, 4          			
+    la $a0, number_of_OH        	# load the text 		
+    syscall				
+    li $v0,1  		    		# print int
+    move $a0, $s1 	            	# load number of H  
+    syscall	
+    li $v0, 4          			
+    la $a0,newline   	    		# add new line  		
+    syscall	
    	 
-   	  li $v0, 4          			
-   	 la $a0, number_of_M        	# load the text 		
-   	 syscall				
-   	 li $v0,1  		    	# print int
-	 move $a0, $s2 	            	# load number of H  
-	 syscall	
-	 li $v0, 4          			
-   	 la $a0,newline   	    	# add new line  		
-   	 syscall
+    li $v0, 4          			
+    la $a0, number_of_M        		# load the text 		
+    syscall				
+    li $v0,1  		    		# print int
+    move $a0, $s2 	            	# load number of H  
+    syscall	
+    li $v0, 4          			
+    la $a0,newline   	    		# add new line  		
+    syscall
 	
-
-	 li $s5 ,0                  	# s4 to save the ratio
-	 li $t1,31
-	 
-    	mtc1 $s0, $f0  
-    	cvt.s.w $f0, $f0 	    	# Convert the integer to a float in $f0                        	
-    	mtc1 $t1, $f1 
-    	cvt.s.w $f1, $f1	    	# Convert the integer to a float in $f1                       
-    	div.s $f12, $f0, $f1  
+    li $s5 ,0                  		# s4 to save the ratio
+    li $t1,31 
+    mtc1 $s0, $f0  
+    cvt.s.w $f0, $f0 	    		# Convert the integer to a float in $f0                        	
+    mtc1 $t1, $f1 
+    cvt.s.w $f1, $f1	    		# Convert the integer to a float in $f1                       
+    div.s $f12, $f0, $f1  
     	
- 	 li $v0, 4          			
-   	 la $a0, The_average       	# load the text 		
-   	 syscall				
-   	  li $v0, 2 
-	 syscall	
-	 li $v0, 4          			
-   	 la $a0,newline   	    	# add new line  		
-   	 syscall
+    li $v0, 4          			
+    la $a0, The_average       		# load the text 		
+    syscall				
+    li $v0, 2 
+    syscall	
+    li $v0, 4          			
+    la $a0,newline   	    		# add new line  		
+    syscall
 
-
-    	mtc1 $s0, $f0  
-    	cvt.s.w $f0, $f0 	    	# Convert the integer to a float in $f0                        	
-    	mtc1 $s1, $f1 
-    	cvt.s.w $f1, $f1	    	# Convert the integer to a float in $f1                      
-    	div.s $f12, $f0, $f1  
+    mtc1 $s0, $f0  
+    cvt.s.w $f0, $f0 	    		# Convert the integer to a float in $f0                        	
+    mtc1 $s1, $f1 
+    cvt.s.w $f1, $f1	    		# Convert the integer to a float in $f1                      
+    div.s $f12, $f0, $f1  
     	
- 	 li $v0, 4          			
-   	 la $a0, The_ratio      	# load the text 		
-   	 syscall				
-   	  li $v0, 2 
-	 syscall	
-	 li $v0, 4          			
-   	 la $a0,newline   	    	# add new line  		
-   	 syscall
+    li $v0, 4          			
+    la $a0, The_ratio      		# load the text 		
+    syscall				
+    li $v0, 2 
+    syscall	
+    li $v0, 4          			
+    la $a0,newline   	    		# add new line  		
+    syscall
    	 
-
     j main     				# Jump back to the menu
 #  -------------------------------------------------    
 
 add_appointment:
+    li $t3, 0          			# Initialize loop counter
+    la $t5, print_buffer 		# Load the address of print_buffer 
+    clear_2p:				# Clear the print_buffer 
+    sb $zero, 0($t5)     		# Store zero in the current byte of print_buffer 
+    addi $t3, $t3, 1   			# Increment loop counter
+    addi $t5, $t5, 1   			# Increment address
+    bne $t3, 100, clear_2p  		# Branch to clear_loop if not all bytes are cleared
 
-    	li $t3, 0          		# Initialize loop counter
-    	la $t5, print_buffer 		# Load the address of print_buffer 
-    	clear_2p:			# Clear the print_buffer 
-    	sb $zero, 0($t5)     		# Store zero in the current byte of print_buffer 
-    	addi $t3, $t3, 1   		# Increment loop counter
-    	addi $t5, $t5, 1   		# Increment address
-    	bne $t3, 100, clear_2p  	# Branch to clear_loop if not all bytes are cleared
-
-    	li $a1, 1			# Flag to add \n in the end of print_buffer in give_day function
-    	jal give_day			# Call give_day function to get the day that we want to work on it
-    
-   	li $v0, 4          			
-   	la $a0,newline   	    	# add new line  		
-   	syscall
-    	la $t0, day_buffer  		# Pointer to the day buffer
-    	print_loop:			# Search for the start of an appointment 
-    	lb $t3, 0($t0)	 		# Load a character from the input buffer
-    	beq $t3, 10  ,next_555         #check if buffer end
-    	li $v0 ,11			# lload 11 too print char 
-    	move $a0,$t3			# move the byte to a0 to print
-    	syscall    	   	    	# print it   	   	   	    	
-        addi $t0, $t0, 1  		# Continue to the next character
-        j print_loop			# Continue the loop
+    li $a1, 1				# Flag to add \n in the end of print_buffer in give_day function
+    jal give_day			# Call give_day function to get the day that we want to work on it
+    li $v0, 4          			
+    la $a0,newline   	    		# add new line  		
+    syscall				# System call
+    la $t0, day_buffer  		# Pointer to the day buffer
+    print_loop:				# Search for the start of an appointment 
+    lb $t3, 0($t0)	 		# Load a character from the input buffer
+    beq $t3, 10  ,next_555       	# check if buffer end
+    li $v0 ,11				# load 11 too print char 
+    move $a0,$t3			# move the byte to a0 to print
+    syscall    	   	    		# print it   	   	   	    	
+    addi $t0, $t0, 1  			# Continue to the next character
+    j print_loop			# Continue the loop
     	
-    	next_555:			# now the print is end
+    next_555:				# now the print is end
+    jal read_slot			# Call read_slot function to read the start/end of slot
+    move $a1,$t0			# save the slot begin from user to a1 
+    move $a2,$t6			# save the slot end from user to a1 
+  	 
+    li $v0, 4   			# ask user which tupe he will add      			
+    la $a0,type      	 		# load the text 		
+    syscall
+    li $v0, 12 				# read char fro muser 
+    syscall
+    move $a3,$v0			# save the tupe in a3
+
+    li $t4 , 6  			#load 6 to $t2 to check if any number from 1 to 5 
+    blt $a1,$t4 ,Add11      		# check if the first number 1-5 then add 12 
+    j else_11               		# if not go to else 
     
-    	jal read_slot			# Call read_slot function to read the start/end of slot
-
-  	 move $a1,$t0			# save the slot begin from user to a1 
-  	 move $a2,$t6			# save the slot end from user to a1 
-  	 
-  	 
-    	 li $v0, 4   			# ask user which tupe he will add      			
-   	 la $a0,type      	 	# load the text 		
-   	 syscall
-   	
-   	li $v0, 12 			# read char fro muser 
-    	syscall
-    	move $a3,$v0			# save the tupe in a3
-
-	li $t4 , 6  			#load 6 to $t2 to check if any number from 1 to 5 
+    Add11:
+    addi $a1,$a1,12 			# add 12 to the number
 	
-	blt $a1,$t4 ,Add11      	# check if the first number 1-5 then add 12 
+    else_11:
+    blt $a2,$t4 ,Add22   	        # check the scecond number
+    j else_22
+    					# if not go to else_2
+    Add22:
+    addi $a2,$a2,12        		# add 12 to the number
 	
-	j else_11               	# if not go to else 
-	Add11:
-	addi $a1,$a1,12 		# add 12 to the number
-	
-	else_11:
-	blt $a2,$t4 ,Add22   	        # check the scecond number
-	
-	j else_22			# if not go to else_2
-	Add22:
-	addi $a2,$a2,12        		# add 12 to the number
-	
-	else_22: 			# not the number is ready 
-    	
-    	lb $t6, char_L
-        beq $t6, $a3, true		# check if the char = "L" 
-        lb $t6, char_M
-        beq $t6, $a3, true		# check if the char = "M" 
-        lb $t6, char_O
-        beq $t6, $a3, true		# check if the char = "OH" 
-        
+    else_22: 				# not the number is ready 
+    lb $t6, char_L
+    beq $t6, $a3, true			# check if the char = "L" 
+    lb $t6, char_M
+    beq $t6, $a3, true			# check if the char = "M" 
+    lb $t6, char_O
+    beq $t6, $a3, true			# check if the char = "OH" 
        					# Convert small letter to capital letter
-	li $t3, 32          		# Difference between small and capital letters in ASCII
-	sub $a3, $a3, $t3    		# Convert small letter to capital letter
+    li $t3, 32          		# Difference between small and capital letters in ASCII
+    sub $a3, $a3, $t3    		# Convert small letter to capital letter
           	
-    	true:
-	
-	move $s0,$a1   			# move the time slot and type to register s0-1-2 
-	move $s1,$a2
-	move $s2,$a3
-    	la $t0, day_buffer  		# Pointer to the day buffer
+    true:
+    move $s0,$a1   			# move the time slot and type to register s0-1-2 
+    move $s1,$a2
+    move $s2,$a3
+    la $t0, day_buffer  		# Pointer to the day buffer
 
- 	search_loop1:			# Search for the start of an appointment 
-    	lb $t3, 0($t0)	 		# Load a character from the input buffer
-    	beq $t3 ,10,next_55 	
+    search_loop1:			# Search for the start of an appointment 
+    lb $t3, 0($t0)	 		# Load a character from the input buffer
+    beq $t3 ,10,next_55 	
     					# check if the char any letter of types then go to get-slot1
-    	lb  $t4 ,char_L			#load L int o t4
-    	beq $t3 ,$t4 ,get_slot1		
-    	lb  $t4 ,char_M			#load M int o t4
-    	beq $t3 ,$t4 ,get_slot1
-    	lb  $t4 ,char_O			#load O int o t4
-    	beq $t3 ,$t4 ,get_slot1
+    lb  $t4 ,char_L			# load L int o t4
+    beq $t3 ,$t4 ,get_slot1		
+    lb  $t4 ,char_M			# load M int o t4
+    beq $t3 ,$t4 ,get_slot1
+    lb  $t4 ,char_O			# load O int o t4
+    beq $t3 ,$t4 ,get_slot1
     	
-    	j skip_11			# if the char have not cahr then skip the the function			
+    j skip_11				# if the char have not cahr then skip the the function			
     	
-    	 get_slot1:			
-    	 move $a0,$t0 			#take copy of addres to function
-    	 jal get_slot			# call function get_slot
-    	 j test_slot			#test now the slopt if true or not 	
+    get_slot1:			
+    move $a0,$t0 			# take copy of addres to function
+    jal get_slot			# call function get_slot
+    j test_slot				# test now the slopt if true or not 	
     	 
-   	END_test:   	   	    	   	   	    	
-    	skip_11:    	   	    	   	   	    	   	   	   	   	    	
-        addi $t0, $t0, 1  		# Continue to the next character
-        j search_loop1			# Continue the loop
+    END_test:   	   	    	   	   	    	
+    skip_11:    	   	    	   	   	    	   	   	   	   	    	
+    addi $t0, $t0, 1  			# Continue to the next character
+    j search_loop1			# Continue the loop
 
-   	test_slot:
-    					#s0 ,s1 ,a1,a2
-    					#if (s0 >= a1 && s0 < a2) || (s1 > a1 && s1 <= a2)
-    	bge $s0 ,$a1 ,and_1  		
-    	j or_1
-    	and_1:
-    	blt $s0 ,$a2 ,invaild_1
-    	or_1:
-    	bgt $s1,$a1, t2
-    	j or_2
-    	t2:
-    	ble $s1 ,$a2 ,invaild_1
-    	or_2:
-    	j END_test			# if test go good end it and back to loop
-    	j next_55
-    	invaild_1:			# if the slot is wrong end loop
-    	 li $v0, 4     			# print to user message the slot is wrong     			
-   	 la $a0,wrong_slot  	    	 		
-   	 syscall
-   	 j main				# wrong slot so back to main
-    	
-    	
-    	
-    	next_55:
-
-   	la $t0, day_buffer  		# Pointer to the day buffer
-	li $t1,0			# counter for the print buffer
-   	li $t2,0			#flag used in loop			
-   	li $t5,0			#flag used in loop
-	li $s7,1			#flag used in loop
-	li $s6, 0			# counter
-
-   	lb $t3, 0($t0)	 		# Load a character from the input buffer
-    	sb $t3 , print_buffer($t1)     # store the byte in print buffer
-	addi $t1 ,$t1, 1		# Continue to the next address	    	   	   	    	   	   	   	   	    	
-        addi $t0, $t0, 1  		# Continue to the next address
-     	
+    test_slot:				# s0 ,s1 ,a1,a2				
+    bge $s0 ,$a1 ,and_1  		# if (s0 >= a1 && s0 < a2) || (s1 > a1 && s1 <= a2)
+    j or_1
+    and_1:
+    blt $s0 ,$a2 ,invaild_1
+    or_1:
+    bgt $s1,$a1, t2
+    j or_2
+    t2:
+    ble $s1 ,$a2 ,invaild_1
+    or_2:
+    j END_test				# if test go good end it and back to loop
+    j next_55
+    invaild_1:				# if the slot is wrong end loop
+    li $v0, 4     			# print to user message the slot is wrong     			
+    la $a0,wrong_slot  	    	 		
+    syscall
+    j main				# wrong slot so back to main
     
-	
-    	lb $t3, 0($t0)	 		# Load a character from the input buffer
-    	sb $t3 , print_buffer($t1)	# Load a character from the input buffer
-	addi $t1 ,$t1, 1	    	# Continue to the next address  	   	    	   	   	   	   	    	
-        addi $t0, $t0, 1  		# Continue to the next character
+    next_55:
+    la $t0, day_buffer  		# Pointer to the day buffer
+    li $t1,0				# counter for the print buffer
+    li $t2,0				# flag used in loop			
+    li $t5,0				# flag used in loop
+    li $s7,1				# flag used in loop
+    li $s6, 0				# counter
+
+    lb $t3, 0($t0)	 		# Load a character from the input buffer
+    sb $t3 , print_buffer($t1)      	# store the byte in print buffer
+    addi $t1 ,$t1, 1			# Continue to the next address	    	   	   	    	   	   	   	   	    	
+    addi $t0, $t0, 1  			# Continue to the next address
+    lb $t3, 0($t0)	 		# Load a character from the input buffer
+    sb $t3 , print_buffer($t1)		# Load a character from the input buffer
+    addi $t1 ,$t1, 1	    		# Continue to the next address  	   	    	   	   	   	   	    	
+    addi $t0, $t0, 1  			# Continue to the next character
+           	   	 
+    add_loop:				# Search for the start of an appointment 
+    lb $t3, 0($t0)	 		# Load a character from the input buffer
+    addi $s6, $s6, 1			# counter used after loop
+    beq $t2 ,1, dont_test		# if teh flag t2 is 1 dont test again
+    beq $t5 ,1 ,reset_t5		# if teh flag t5 is 1 go to reset_t5
+    j test_place			# go to test place of the new slot
+    dont_test:				# to skip test after end 
+    next_loop:				# countine the loop
+    beq $t3,10 ,next_5555		# check if teh day slots is end 
+    sb $t3 , print_buffer($t1)		# store teh byte from day buffer t o print buffer
+    addi $t1 ,$t1, 1			# Continue to the next charactercharacter	    	   	   	    	   	   	   	   	    	
+    addi $t0, $t0, 1  			# Continue to the next charactercharacter
+    j add_loop				# Continue the loop
         
-    	  
-    	  
+    reset_t5: 				# reset the t5 
+    li $t5 ,0				# make t5=0 again
+    j next_loop				# go back to loop
 
-  	add_loop:			# Search for the start of an appointment 
-    	lb $t3, 0($t0)	 		# Load a character from the input buffer
-    	addi $s6, $s6, 1		# counter used after loop
- 
-    	beq $t2 ,1, dont_test		# if teh flag t2 is 1 dont test again
-    	beq $t5 ,1 ,reset_t5		# if teh flag t5 is 1 go to reset_t5
-    	j test_place			# go to test place of the new slot
-    	dont_test:			# to skip test after end 
-    	next_loop:			# countine the loop
-    	beq $t3,10 ,next_5555		# check if teh day slots is end 
-    	
-
-    	sb $t3 , print_buffer($t1)	# store teh byte from day buffer t o print buffer
-	addi $t1 ,$t1, 1		# Continue to the next charactercharacter	    	   	   	    	   	   	   	   	    	
-        addi $t0, $t0, 1  		# Continue to the next charactercharacter
-        j add_loop			# Continue the loop
-        
-        reset_t5: 			# reset the t5 
-        li $t5 ,0			# make t5=0 again
-        j next_loop			# go back to loop
-
-	reset_t3 :			# rseet t3 make t3 have it old vlaue before begin the test
-	move $t3 ,$t6			# old value saved in t6
-	j next_loop			# back to loop
+    reset_t3 :				# rseet t3 make t3 have it old vlaue before begin the test
+    move $t3 ,$t6			# old value saved in t6
+    j next_loop				# back to loop
 	
-
-
- 	test_place:			# begin test palce function
- 	move $t6 ,$t3			# first take copy of t3 to be sure his vlaue will not lost
- 	
- 	
+    test_place:				# begin test palce function
+    move $t6 ,$t3			# first take copy of t3 to be sure his vlaue will not lost
  					# Check if $t3 contains a numeric character (ASCII '0' to '9')
-	li $t7, '0'  			# ASCII code for '0'
-	li $t8, '9'  			# ASCII code for '9'
-
+    li $t7, '0'  			# ASCII code for '0'
+    li $t8, '9'  			# ASCII code for '9'
 					# Check if $t3 is within the ASCII range of numeric characters
-	blt $t3, $t7, reset_t3 		# Branch if $t3 is less than '0'
-	bgt $t3, $t8, reset_t3 		# Branch if $t3 is greater than '9'
-
+    blt $t3, $t7, reset_t3 		# Branch if $t3 is less than '0'
+    bgt $t3, $t8, reset_t3 		# Branch if $t3 is greater than '9'
+    
 					# If the execution reaches here, $t3 contains a numeric character
 					# Handle the case where $t3 is a numeric character
 					# $t3 contains an integer
-	subi $t3,$t3 ,48		#covert from ascii to dec
-	move $t9 ,$t3 			# save the value in t3 after convert to t9 	
-        addi $t0, $t0, 1  		# Continue to the next character
-        lb $t3, 0($t0)	 	        # load next char in day buffer to t3
-        subi $t0, $t0, 1  		# Continue to the next character		
+    subi $t3,$t3 ,48			# covert from ascii to dec
+    move $t9 ,$t3 			# save the value in t3 after convert to t9 	
+    addi $t0, $t0, 1  			# Continue to the next character
+    lb $t3, 0($t0)	 	        # load next char in day buffer to t3
+    subi $t0, $t0, 1  			# Continue to the next character		
         				# Check if $t3 is within the ASCII range of numeric characters
-        blt $t3, $t7, test55		# Branch if $t3 is less than '0'	
-	bgt $t3, $t8, test55		# Branch if $t3 is greater than '9'
-	li $t5 , 1			# if next byte is also number make t5 falg is 1 
-	mul $t9,$t9,10			# multi t9 by 10
-	subi $t3,$t3 ,48		#covert from ascii to dec	
-	add $t9,$t9,$t3			# make the two didgit one number again
+    blt $t3, $t7, test55		# Branch if $t3 is less than '0'	
+    bgt $t3, $t8, test55		# Branch if $t3 is greater than '9'
+    li $t5 , 1				# if next byte is also number make t5 falg is 1 
+    mul $t9,$t9,10			# multi t9 by 10
+    subi $t3,$t3 ,48			# covert from ascii to dec	
+    add $t9,$t9,$t3			# make the two didgit one number again
 	
-	test55:
-	move $t3,$t9			# but the new value in t3
-
+    test55:
+    move $t3,$t9			# but the new value in t3
+    li $t4 , 6  			# load 6 to $t2 to check if any number from 1 to 5 
 	
-	li $t4 , 6  			#load 6 to $t2 to check if any number from 1 to 5 
-	
-	blt $t3,$t4 ,Add111            # check if the first number 1-5 then add 12 
-	j else_111               	# if not go to else 
-	Add111:
-	addi $t3,$t3,12 		# add 12 to the number
-	else_111:
-
-	
-	
-	bgt $t3,$s0, write_temp		# check if this the place to add the new slot	
-    	j reset_t3 			# reset t3 to his orginal value after end test
-    	write_temp:			# here the wite palce for new slot 
-    	li $t2,1			# make the t2 flag 1 to not test again for  place
-    	li $s7,0			# make the t7 flag 1 
+    blt $t3,$t4 ,Add111           	# check if the first number 1-5 then add 12 
+    j else_111               		# if not go to else 
+    Add111:
+    addi $t3,$t3,12 			# add 12 to the number
+  
+    else_111:
+    bgt $t3,$s0, write_temp		# check if this the place to add the new slot	
+    j reset_t3 				# reset t3 to his orginal value after end test
+    write_temp:				# here the wite palce for new slot 
+    li $t2,1				# make the t2 flag 1 to not test again for  place
+    li $s7,0				# make the t7 flag 1 
     	
-	bgt $s0,12, sub_1_12		# check if type if begin slot after 12 
-	j  check_s1			# if not go to check s2 time of end slot
-	sub_1_12:			# if time after 12 
-	subi $s0,$s0,12			# sub 12  due to we add 12 previse
-	check_s1:			# check the end time of slot
-	bgt $s1,12, sub_2_12		# same teet if after 12 or not 
-	j end_check			# if not go to end check
-	sub_2_12:			# if yes after 12 
-	subi $s1,$s1,12			# sub 12 again
-	end_check:			# end not th slot time not 24h type 
-
+    bgt $s0,12, sub_1_12		# check if type if begin slot after 12 
+    j  check_s1				# if not go to check s2 time of end slot
+    sub_1_12:				# if time after 12 
+    subi $s0,$s0,12			# sub 12  due to we add 12 previse
+    check_s1:				# check the end time of slot
+    bgt $s1,12, sub_2_12		# same teet if after 12 or not 
+    j end_check				# if not go to end check
+    sub_2_12:				# if yes after 12 
+    subi $s1,$s1,12			# sub 12 again
+    end_check:				# end not th slot time not 24h type 
 	
-	
-	
-    	bgt $s0 , 9 , put_2_D 		# check if begin slot time is two digit
+    bgt $s0 , 9 , put_2_D 		# check if begin slot time is two digit
     					# if not write it in buffer
-    	addi $s0, $s0, '0'   		# Convert the integer to ASCII representation
-    	sb $s0 , print_buffer($t1)	#store the time to buffer
-	addi $t1 ,$t1 ,1		# make teh  addrees to nesxt postion
+    addi $s0, $s0, '0'   		# Convert the integer to ASCII representation
+    sb $s0 , print_buffer($t1)		# store the time to buffer
+    addi $t1 ,$t1 ,1			# make teh  addrees to nesxt postion
 	
-	j dont_put_2_D 			#if number not two digits kip
-	put_2_D  :			#if number  two 
-	li $s4,10			# laod 10 to s4
-	div $s0,$s4			#div s0 by 10
+    j dont_put_2_D 			# if number not two digits kip
+    put_2_D  :				# if number  two 
+    li $s4,10				# laod 10 to s4
+    div $s0,$s4				# div s0 by 10
 	
-	mflo $s0			# get first digit to s0
-	addi $s0, $s0, '0'    		# Convert the integer to ASCII representation
-    	sb $s0 , print_buffer($t1)	# store the time to buffer
-	addi $t1 ,$t1 ,1		# make teh  addrees to nesxt postion
+    mflo $s0				# get first digit to s0
+    addi $s0, $s0, '0'    		# Convert the integer to ASCII representation
+    sb $s0 , print_buffer($t1)		# store the time to buffer
+    addi $t1 ,$t1 ,1			# make teh  addrees to nesxt postion
 	
-	mfhi $s0			# get seconf digit to s0
-	addi $s0, $s0, '0'   		# Convert the integer to ASCII representation
-    	sb $s0 , print_buffer($t1)	# store the time to buffer
-	addi $t1 ,$t1 ,1		# make teh  addrees to nesxt postion
+    mfhi $s0				# get seconf digit to s0
+    addi $s0, $s0, '0'   		# Convert the integer to ASCII representation
+    sb $s0 , print_buffer($t1)		# store the time to buffer
+    addi $t1 ,$t1 ,1			# make teh  addrees to nesxt postion
 	
-	dont_put_2_D :
-    		
-	li $t8 , 45			# put teh - to t8
-	sb $t8 , print_buffer($t1)	# put the -  to bufeer
-	addi $t1 ,$t1 ,1		# make teh  addrees to nesxt postion
+    dont_put_2_D :
+    li $t8 , 45				# put teh - to t8
+    sb $t8 , print_buffer($t1)		# put the -  to bufeer
+    addi $t1 ,$t1 ,1			# make teh  addrees to nesxt postion
 	
-	bgt $s1 , 9 , put_2_D1		# check if end slot time is two digit
-    	addi $s1, $s1, '0'    		# Convert the integer to ASCII representation
-    	sb $s1 , print_buffer($t1)	# store the time to buffer
-	addi $t1 ,$t1 ,1		# make teh  addrees to nesxt postion
-	
-	j dont_put_2_D1 		#if number not two digits skip
-	put_2_D1  :
-	
-	li $s4,10			# laod 10 to s4
-	div $s1,$s4			#div s0 by 10
-	
-	mflo $s1			# get first digit to s1
-	addi $s1, $s1, '0'    		#Convert the integer to ASCII representation
-    	sb $s1 , print_buffer($t1)	# store the time to buffer
-	addi $t1 ,$t1 ,1		# make teh  addrees to nesxt postion
-	
-	mfhi $s1			# get seconf digit to s1
-	addi $s1, $s1, '0'    		# Convert the integer to ASCII representation
-    	sb $s1 , print_buffer($t1)	# store the time to buffer	
-	addi $t1 ,$t1 ,1		# make the  addrees to nesxt postion
-	
-	dont_put_2_D1 :
-    		
-	
-	li $t8 , 32			# load space to t8
-	sb $t8 , print_buffer($t1)	# store the space to buffer
-	addi $t1 ,$t1 ,1		# make the  addrees to nesxt postion
-	
-	
-	
-	sb $s2 , print_buffer($t1)	# store the tupe of slot in buffer 
-	addi $t1 ,$t1 ,1		# make the  addrees to nesxt postion
-	lb  $t8 ,char_O			# load char o to t8
-    	beq $s2 ,$t8 ,Add_H		# check if the letter if 
-	j not_add_H			# if not go on 
-	Add_H:				# if the cahe if o
-	lb  $t8 ,char_H			# laod the char h to t8
-	sb $t8 , print_buffer($t1)	# store h to buffer
-	addi $t1 ,$t1 ,1		# make the  addrees to nesxt postion
-	
-	
-	not_add_H:			
- 	li $t8 , 44			# laod , to t8
-	sb $t8 , print_buffer($t1)	# store , to buffer
-	addi $t1 ,$t1 ,1		# make the  addrees to nesxt postion
-	
-	li $t8 , 32			# laod space to t8
-	sb $t8 , print_buffer($t1)	# store space to buffer
-	addi $t1 ,$t1 ,1		# make the  addrees to nesxt postion
-	
-	
-	 move $t3 ,$t6			# make  t3  have his orginal value before change 
-	j next_loop			# back to loop
-	
-
-	next_5555:
-	beq $s7,1 add_slot		# check if slot added to buffer or not
-	j slot_added			#if slot added skip
-	add_slot:			# if not add it 
-	addi $t1 ,$t1 ,-1		# first back t oprevise postion before new line
-	blt $s6, 4, skip_now		# check if slot postin is in not emity day
-	li $t8 , 44			# not emity day so add , to t8
-	sb $t8 , print_buffer($t1)	# store , to buffer
-	addi $t1 ,$t1 ,1		# make the  addrees to nesxt postion
-	skip_now:
-	li $t8 , 32			# laod space to t8 
-	sb $t8 , print_buffer($t1)	# store space to buffer
-	addi $t1 ,$t1 ,1		# make the  addrees to nesxt postion
-	
-					# here same code from line 680 to 750 so no need to commant
-	bgt $s0,12, sub_1_120
-	j  check_s10
-	sub_1_120:
-	subi $s0,$s0,12
-	check_s10:
-	bgt $s1,12, sub_2_120
-	j end_check0
-	sub_2_120:
-	subi $s1,$s1,12
-	end_check0:
-
-	
-    	bgt $s0 , 9 , put_2_D0 
-    	addi $s0, $s0, '0'    
-    	sb $s0 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	
-	j dont_put_2_D0 
-	put_2_D0  :
-	
-	li $s4,10
-	
-	div $s0,$s4
-	
-	mflo $s0
-	addi $s0, $s0, '0'    
-    	sb $s0 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	
-	mfhi $s0
-	addi $s0, $s0, '0'    
-    	sb $s0 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	
-	dont_put_2_D0 :
-    		
-	li $t8 , 45
-	sb $t8 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	
-	bgt $s1 , 9 , put_2_D10
-    	addi $s1, $s1, '0'    
-    	sb $s1 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	
-	j dont_put_2_D10 
-	put_2_D10  :
-	
-	li $s4,10
-	
-	div $s1,$s4
-	
-	mflo $s1
-	addi $s1, $s1, '0'    
-    	sb $s1 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	
-	mfhi $s1
-	addi $s1, $s1, '0'    
-    	sb $s1 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	
-	dont_put_2_D10 :
-    		
-	
-	li $t8 , 32
-	sb $t8 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	
-	sb $s2 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	lb  $t8 ,char_O
-    	beq $s2 ,$t8 ,Add_H0
-	j not_add_H0
-	Add_H0:
-	lb  $t8 ,char_H
-	sb $t8 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	
-	
-	not_add_H0:
- 
-	li $t8 , 32
-	sb $t8 , print_buffer($t1)
-	addi $t1 ,$t1 ,1
-	
-					# end of repeted code
-	
-	slot_added:
- 	li $t0, 0x0A			# Add new line in the last
-   	sb $t0, print_buffer($t1)      # Store byte to print_buffer
-
-	next_54:
-	li,$v0,4			#load 4 to v0 to print string
-	la $a0,newline			# laod new line 
-   	syscall				# print it
-
-
-
-   	la $a0, print_buffer 		# Load the print_buffer address to print
-    	li $v0, 4     			# System call number for printing a string
-   	syscall				# System call
+    bgt $s1 , 9 , put_2_D1		# check if end slot time is two digit
+    addi $s1, $s1, '0'    		# Convert the integer to ASCII representation
+    sb $s1 , print_buffer($t1)		# store the time to buffer
+    addi $t1 ,$t1 ,1			# make teh  addrees to nesxt postion
+    j dont_put_2_D1 			#if number not two digits skip
     
-   	jal write_file			# Call write_file function to write on calendar.txt file
-    	j main
+    put_2_D1  :
+    li $s4,10				# laod 10 to s4
+    div $s1,$s4				# div s0 by 10
+    mflo $s1				# get first digit to s1
+    addi $s1, $s1, '0'    		# Convert the integer to ASCII representation
+    sb $s1 , print_buffer($t1)		# store the time to buffer
+    addi $t1 ,$t1 ,1			# make teh  addrees to nesxt postion
+    mfhi $s1				# get seconf digit to s1
+    addi $s1, $s1, '0'    		# Convert the integer to ASCII representation
+    sb $s1 , print_buffer($t1)		# store the time to buffer	
+    addi $t1 ,$t1 ,1			# make the  addrees to nesxt postion
+	
+    dont_put_2_D1 :
+    li $t8 , 32				# load space to t8
+    sb $t8 , print_buffer($t1)		# store the space to buffer
+    addi $t1 ,$t1 ,1			# make the  addrees to nesxt postion
+	
+    sb $s2 , print_buffer($t1)		# store the tupe of slot in buffer 
+    addi $t1 ,$t1 ,1			# make the  addrees to nesxt postion
+    lb  $t8 ,char_O			# load char o to t8
+    beq $s2 ,$t8 ,Add_H			# check if the letter if 
+    j not_add_H				# if not go on 
+    
+    Add_H:				# if the cahe if o
+    lb  $t8 ,char_H			# laod the char h to t8
+    sb $t8 , print_buffer($t1)		# store h to buffer
+    addi $t1 ,$t1 ,1			# make the  addrees to nesxt postion
+	
+    not_add_H:			
+    li $t8 , 44				# laod , to t8
+    sb $t8 , print_buffer($t1)		# store , to buffer
+    addi $t1 ,$t1 ,1			# make the  addrees to nesxt postion
+    li $t8 , 32				# laod space to t8
+    sb $t8 , print_buffer($t1)		# store space to buffer
+    addi $t1 ,$t1 ,1			# make the  addrees to nesxt postion	
+    move $t3 ,$t6			# make  t3  have his orginal value before change 
+    j next_loop				# back to loop	
+
+    next_5555:
+    beq $s7,1 add_slot			# check if slot added to buffer or not
+    j slot_added			# if slot added skip
+    
+    add_slot:				# if not add it 
+    addi $t1 ,$t1 ,-1			# first back t oprevise postion before new line
+    blt $s6, 4, skip_now		# check if slot postin is in not emity day
+    li $t8 , 44				# not emity day so add , to t8
+    sb $t8 , print_buffer($t1)		# store , to buffer
+    addi $t1 ,$t1 ,1			# make the  addrees to nesxt postion
+    
+    skip_now:
+    li $t8 , 32				# laod space to t8 
+    sb $t8 , print_buffer($t1)		# store space to buffer
+    addi $t1 ,$t1 ,1			# make the  addrees to nesxt postion
+    bgt $s0,12, sub_1_120		# here same code from line 680 to 750 so no need to commant
+    j  check_s10
+   
+     sub_1_120:
+    subi $s0,$s0,12
+    check_s10:
+    bgt $s1,12, sub_2_120
+    j end_check0
+    sub_2_120:
+    subi $s1,$s1,12
+    end_check0:
+    bgt $s0 , 9 , put_2_D0 
+    addi $s0, $s0, '0'    
+    sb $s0 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+    j dont_put_2_D0 
+    
+    put_2_D0  :
+    li $s4,10
+    div $s0,$s4
+    mflo $s0
+    addi $s0, $s0, '0'    
+    sb $s0 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+    mfhi $s0
+    addi $s0, $s0, '0'    
+    sb $s0 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+	
+    dont_put_2_D0 :	
+    li $t8 , 45
+    sb $t8 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+    bgt $s1 , 9 , put_2_D10
+    addi $s1, $s1, '0'    
+    sb $s1 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+    j dont_put_2_D10 
+   
+    put_2_D10  :
+    li $s4,10
+    div $s1,$s4
+    mflo $s1
+    addi $s1, $s1, '0'    
+    sb $s1 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+    mfhi $s1
+    addi $s1, $s1, '0'    
+    sb $s1 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+	
+    dont_put_2_D10 :
+    li $t8 , 32
+    sb $t8 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+    sb $s2 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+    lb  $t8 ,char_O
+    beq $s2 ,$t8 ,Add_H0
+    j not_add_H0
+    
+    Add_H0:
+    lb  $t8 ,char_H
+    sb $t8 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+	
+    not_add_H0:
+    li $t8 , 32
+    sb $t8 , print_buffer($t1)
+    addi $t1 ,$t1 ,1
+					# end of repeted code
+    slot_added:
+    li $t0, 0x0A			# Add new line in the last
+    sb $t0, print_buffer($t1)       	# Store byte to print_buffer
+
+    next_54:
+    li,$v0,4				# load 4 to v0 to print string
+    la $a0,newline			# laod new line 
+    syscall				# print it
+    la $a0, print_buffer 		# Load the print_buffer address to print
+    li $v0, 4     			# System call number for printing a string
+    syscall				# System call
+    jal write_file			# Call write_file function to write on calendar.txt file
+    j main
 
 #  -------------------------------------------------
 
@@ -1323,70 +1245,71 @@ read_slot:
     syscall                 		# System call
     
 #  -------------------------------------------------
+
 get_slot:
-	move $t2,$a0			# take copy of addrees of calender 
-	subi $t2, $t2, 3         	# Move to the previce position in memory
-	lb $t5 , 0($t2)			# load char from calender
-	li $t7, 0x0000002d		# load "-" to $t7 
-	beq $t5,$t7 next		# check if char from calender = "-"
-	lb $t9,0($t2)			# load the second number in $t9
-	sub $t9, $t9, 48         	# Convert ASCII to decimal
-	addi $t2,$t2 ,1			# Move to the next position in memory to load the second digit
-	lb $t4,0($t2)			# load second digit
+    move $t2,$a0			# take copy of addrees of calender 
+    subi $t2, $t2, 3         		# Move to the previce position in memory
+    lb $t5 , 0($t2)			# load char from calender
+    li $t7, 0x0000002d			# load "-" to $t7 
+    beq $t5,$t7 next			# check if char from calender = "-"
+    lb $t9,0($t2)			# load the second number in $t9
+    sub $t9, $t9, 48         		# Convert ASCII to decimal
+    addi $t2,$t2 ,1			# Move to the next position in memory to load the second digit
+    lb $t4,0($t2)			# load second digit
 	sub $t4, $t4, 48         	# Convert ASCII to decimal
 
-	mul $t9 ,$t9 ,10		# this mul to put the both digit in one register
-	add $t9 ,$t9 , $t4
+    mul $t9 ,$t9 ,10			# this mul to put the both digit in one register
+    add $t9 ,$t9 , $t4
 	 
-	subi $t2, $t2, 2		# Move to the previce position in memory
-	j second_number                	# first number end go to the second
-	next:
-	addi $t2, $t2, 1     		# Move to the next position in memory
-	lb $t9,0($t2)			# Load the number from calender 
-	sub $t9, $t9, 48         	# Convert ASCII to decimal
-	subi $t2, $t2, 1         	# Move to the previce position in memory
+    subi $t2, $t2, 2			# Move to the previce position in memory
+    j second_number                	# first number end go to the second
+    next:
+    addi $t2, $t2, 1     		# Move to the next position in memory
+    lb $t9,0($t2)			# Load the number from calender 
+    sub $t9, $t9, 48         		# Convert ASCII to decimal
+    subi $t2, $t2, 1         		# Move to the previce position in memory
 	
-	second_number:                  # same of above but for second number 
-	subi $t2, $t2, 2         	# Move to the next position in memory
-	li $t7 ,0x00000020
-	lb $t5 , 0($t2)
-	beq $t5,$t7 next_2
-	lb $t8,0($t2)
-	sub $t8, $t8, 48         	# Convert ASCII to decimal
-	addi $t2,$t2 ,1
-	lb $t4,0($t2)
-	sub $t4, $t4, 48         	# Convert ASCII to decimal
-	mul $t8 ,$t8 ,10
-	add $t8 ,$t8 , $t4
-	addi $t2,$t2,1
-	j next_3
-	next_2:
-	addi $t2,$t2,1
-	lb $t8,0($t2)
-	sub $t8, $t8, 48         	# Convert ASCII to decimal
+    second_number:                  	# same of above but for second number 
+    subi $t2, $t2, 2         		# Move to the next position in memory
+    li $t7 ,0x00000020
+    lb $t5 , 0($t2)
+    beq $t5,$t7 next_2
+    lb $t8,0($t2)
+    sub $t8, $t8, 48         		# Convert ASCII to decimal
+    addi $t2,$t2 ,1
+    lb $t4,0($t2)
+    sub $t4, $t4, 48         		# Convert ASCII to decimal
+    mul $t8 ,$t8 ,10
+    add $t8 ,$t8 , $t4
+    addi $t2,$t2,1
+    j next_3
+    next_2:
+    addi $t2,$t2,1
+    lb $t8,0($t2)
+    sub $t8, $t8, 48         		# Convert ASCII to decimal
 
- 	next_3:
-	li $t2 , 6  			# load 6 to $t2 to check if any number from 1 to 5 
-	blt $t8,$t2 Add1       		# check if the first number 1-5 then add 12 
+    next_3:
+    li $t2 , 6  			# load 6 to $t2 to check if any number from 1 to 5 
+    blt $t8,$t2 Add1       		# check if the first number 1-5 then add 12 
 	
-	j else_1               		# if not go to else 
-	Add1:
-	addi $t8,$t8,12 		# add 12 to the number
+    j else_1               		# if not go to else 
+    Add1:
+    addi $t8,$t8,12 			# add 12 to the number
 	
-	else_1:
-	blt $t9,$t2 Add2      		# check the scecond number
+    else_1:
+    blt $t9,$t2 Add2      		# check the scecond number
 	
-	j else_2			# if not go to else_2
-	Add2:
-	addi $t9,$t9,12        		# add 12 to the number
+    j else_2				# if not go to else_2
+    Add2:
+    addi $t9,$t9,12        		# add 12 to the number
 	  
-	else_2: 			# not the number is ready 
+    else_2: 				# not the number is ready 
 	
-	move $a1,$t8
-	move $a2,$t9
+    move $a1,$t8
+    move $a2,$t9
 	
-	sub $v0,$t9,$t8			# find the long of L buy sub
-	jr $ra    
+    sub $v0,$t9,$t8			# find the long of L buy sub
+    jr $ra    
 				
 #  -------------------------------------------------
 
